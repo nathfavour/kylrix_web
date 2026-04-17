@@ -12,5 +12,6 @@ import { Route as r10 } from './routes/designs.$slug';
 import { Route as r11 } from './routes/logo';
 import { Route as r12 } from './routes/u.$username';
 import { Route as r13 } from './routes/$alias.$';
+import { Route as r14 } from './routes/i.$';
 
-export const routeTree = rootRoute.addChildren([r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13]);
+export const routeTree = rootRoute.addChildren([r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14]);
