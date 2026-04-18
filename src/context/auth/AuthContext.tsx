@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { getCurrentUser, getUser, createUser, updateUser, account } from '@/lib/appwrite';
+import { getCurrentUser, getUser, createUser, updateUser, account, invalidateCurrentUserCache } from '@/lib/appwrite';
 import { getEffectiveUsername } from '@/lib/utils';
 import { getEcosystemUrl } from '@/lib/ecosystem';
 
@@ -39,8 +39,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const refreshUser = useCallback(async (retryCount = 0): Promise<User | null> => {
     try {
       console.log(`[Auth] Checking session in kylrix (attempt ${retryCount + 1})...`);
-      const session = await account.get();
-      
+      const session = await getCurrentUser();
+      if (!session?.$id) {
+        setUser(null);
+        setIsLoading(false);
+        return null;
+      }
+
       console.log('[Auth] Active session detected:', session.$id);
       
       // Clear auth=success from URL
@@ -187,9 +192,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = useCallback(async () => {
     try {
       await account.deleteSession('current');
+      invalidateCurrentUserCache();
       setUser(null);
     } catch (error) {
       console.error('Logout failed:', error);
+      invalidateCurrentUserCache();
       setUser(null);
     }
   }, []);
