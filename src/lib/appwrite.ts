@@ -95,6 +95,32 @@ const withTimeout = <T,>(promise: Promise<T>, timeoutMs: number): Promise<T> => 
     ]);
 };
 
+(account as any).get = async () => {
+    if (currentUserCache && currentUserCache.expiresAt > Date.now()) {
+        return currentUserCache.user;
+    }
+    const persistent = readPersistentCurrentUserCache();
+    if (persistent) {
+        currentUserCache = persistent;
+        return persistent.user;
+    }
+    if (currentUserInFlight) {
+        return currentUserInFlight;
+    }
+
+    currentUserInFlight = withTimeout(originalAccountGet(), CURRENT_USER_REQUEST_TIMEOUT)
+        .then((user) => setCachedCurrentUser(user))
+        .catch(() => {
+            clearCurrentUserCache();
+            return null;
+        })
+        .finally(() => {
+            currentUserInFlight = null;
+        });
+
+    return currentUserInFlight;
+};
+
 export function getFilePreview(bucketId: string, fileId: string, width: number = 64, height: number = 64) {
     return storage.getFilePreview(bucketId, fileId, width, height);
 }
@@ -110,8 +136,11 @@ export async function getCurrentUser(): Promise<any | null> {
         return currentUserCache.user;
     }
 
-    const persistent = getCachedCurrentUser();
-    if (persistent) return persistent;
+    const persistent = readPersistentCurrentUserCache();
+    if (persistent) {
+        currentUserCache = persistent;
+        return persistent.user;
+    }
 
     if (currentUserInFlight) {
         return currentUserInFlight;
