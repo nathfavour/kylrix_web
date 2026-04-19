@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
-import { Client, Account } from 'appwrite';
 import { 
   SubscriptionTier, 
   PaymentMethod, 
@@ -9,6 +8,7 @@ import {
   PPP_DATA, 
   calculateSubscriptionPrice 
 } from '@/lib/subscription/ppp';
+import { getCurrentUser } from '@/lib/appwrite';
 
 interface SubscriptionState {
   currentTier: SubscriptionTier | 'FREE';
@@ -26,8 +26,8 @@ const SubscriptionContext = createContext<SubscriptionState | undefined>(undefin
 
 export function SubscriptionProvider({ 
   children,
-  endpoint = 'https://fra.cloud.appwrite.io/v1',
-  projectId = '67fe9627001d97e37ef3'
+  endpoint: _endpoint = 'https://fra.cloud.appwrite.io/v1',
+  projectId: _projectId = '67fe9627001d97e37ef3'
 }: { 
   children: React.ReactNode,
   endpoint?: string,
@@ -38,9 +38,6 @@ export function SubscriptionProvider({
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('CRYPTO');
   const [isLoading, setIsLoading] = useState(true);
   const [exchangeRates, setExchangeRates] = useState<Record<string, number>>({ USD: 1 });
-
-  const client = useMemo(() => new Client().setEndpoint(endpoint).setProject(projectId), [endpoint, projectId]);
-  const account = useMemo(() => new Account(client), [client]);
 
   const detectedRegion = useMemo(() => {
     const data = PPP_DATA[regionCode] || PPP_DATA.DEFAULT;
@@ -70,7 +67,8 @@ export function SubscriptionProvider({
   useEffect(() => {
     const initSubscription = async () => {
       try {
-        const prefs = await account.getPrefs();
+        const currentUser = await getCurrentUser();
+        const prefs = currentUser?.prefs || {};
         if (prefs?.tier) setCurrentTier(prefs.tier as SubscriptionTier);
         if (prefs?.region && PPP_DATA[prefs.region]) setRegionCode(prefs.region);
         else {
@@ -89,7 +87,7 @@ export function SubscriptionProvider({
       }
     };
     initSubscription();
-  }, [account]);
+  }, []);
 
   const value: SubscriptionState = {
     currentTier,
