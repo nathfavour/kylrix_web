@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { getEcosystemUrl } from '@/lib/ecosystem';
+import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 
 const ALIAS_TO_SUBDOMAIN: Record<string, string> = {
   n: 'note',
@@ -15,7 +16,7 @@ const ALIAS_TO_SUBDOMAIN: Record<string, string> = {
   flow: 'flow',
 };
 
-export const Route = createFileRoute('/$alias/$')({ component: AliasRedirect });
+export const Route = createFileRoute('/$alias/$')({ errorComponent: RouteErrorBoundary, component: AliasRedirect });
 
 function AliasRedirect() {
   const target = (() => {

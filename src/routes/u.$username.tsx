@@ -3,8 +3,9 @@
 import { useEffect } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { getEcosystemUrl } from '@/lib/ecosystem';
+import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 
-export const Route = createFileRoute('/u/$username')({ component: UserRedirect });
+export const Route = createFileRoute('/u/$username')({ errorComponent: RouteErrorBoundary, component: UserRedirect });
 
 function UserRedirect() {
   const params = Route.useParams() as { username?: string };
