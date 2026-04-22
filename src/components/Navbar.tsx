@@ -61,10 +61,6 @@ export const Navbar = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { user, isAuthenticated, isLoading, logout, openIDMWindow } = useAuth();
   const { toggleColorMode, mode } = useColorMode();
-
-  useEffect(() => {
-    console.log('[Navbar] Auth state:', { isLoading, isAuthenticated, userId: user?.$id });
-  }, [isLoading, isAuthenticated, user]);
   
   const [isEcosystemPortalOpen, setIsEcosystemPortalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -164,20 +160,29 @@ export const Navbar = () => {
       <AppBar 
         position="fixed" 
         sx={{ 
-          bgcolor: 'var(--surface)',
+          top: { xs: 12, md: 16 },
+          mx: { xs: 1.5, md: 3 },
+          width: { xs: 'calc(100% - 24px)', md: 'calc(100% - 48px)' },
+          bgcolor: mode === 'dark' ? alpha('#161514', 0.88) : alpha('#FFFFFF', 0.9),
           boxShadow: 'none', 
-          borderBottom: mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+          backdropFilter: 'blur(18px) saturate(180%)',
+          border: mode === 'dark' ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.08)',
+          borderRadius: '28px',
           backgroundImage: 'none',
-          zIndex: (theme) => theme.zIndex.drawer + 1
+          zIndex: (theme) => theme.zIndex.drawer + 3
         }}
       >
         <Container maxWidth="xl">
           <Toolbar 
             disableGutters 
             sx={{ 
-              height: { xs: 72, md: 88 }, 
-              justifyContent: 'space-between',
-              px: { xs: 0, md: 2 }
+              minHeight: { xs: 72, md: 88 }, 
+              display: 'grid',
+              gridTemplateColumns: { xs: 'auto auto', md: 'auto minmax(0, 1fr) auto' },
+              alignItems: 'center',
+              columnGap: { xs: 1.5, md: 2.5 },
+              px: { xs: 1.5, md: 2 },
+              py: 1
             }}
           >
             <Logo 
@@ -197,6 +202,7 @@ export const Navbar = () => {
               sx={{ 
                 display: { xs: 'none', md: 'flex' }, 
                 alignItems: 'center',
+                minWidth: 0,
                 bgcolor: mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
                 px: 1,
                 py: 0.5,
@@ -214,19 +220,20 @@ export const Navbar = () => {
                         transform: Boolean(item.anchorEl) ? 'rotate(180deg)' : 'none',
                         transition: 'transform 0.2s'
                       }} />}
-                      sx={{ 
-                        px: 3,
-                        py: 1,
-                        borderRadius: '100px',
-                        fontWeight: 700, 
-                        fontSize: '0.8rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.1em',
-                        color: Boolean(item.anchorEl) ? '#6366F1' : (mode === 'dark' ? '#fff' : '#09090B'),
-                        opacity: Boolean(item.anchorEl) ? 1 : 0.5,
-                        '&:hover': { 
-                          opacity: 1, 
-                          color: '#6366F1',
+                        sx={{ 
+                          px: 3,
+                          py: 1,
+                          borderRadius: '100px',
+                          fontWeight: 700, 
+                          fontSize: '0.8rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          whiteSpace: 'nowrap',
+                          color: Boolean(item.anchorEl) ? '#6366F1' : (mode === 'dark' ? '#fff' : '#09090B'),
+                          opacity: Boolean(item.anchorEl) ? 1 : 0.5,
+                          '&:hover': { 
+                            opacity: 1, 
+                            color: '#6366F1',
                           bgcolor: mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'
                         }
                       }}
@@ -238,19 +245,20 @@ export const Navbar = () => {
                       component={NextLink}
                       href={item.href || '#'}
                       underline="none"
-                      sx={{ 
-                        px: 3,
-                        py: 1,
-                        display: 'inline-block',
-                        borderRadius: '100px',
-                        fontWeight: 700, 
-                        fontSize: '0.8rem',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.1em',
-                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                        color: isActive(item.href || '') ? '#6366F1' : (mode === 'dark' ? '#fff' : '#09090B'),
-                        opacity: isActive(item.href || '') ? 1 : 0.5,
-                        bgcolor: isActive(item.href || '') ? alpha('#6366F1', 0.05) : 'transparent',
+                        sx={{ 
+                          px: 3,
+                          py: 1,
+                          display: 'inline-block',
+                          borderRadius: '100px',
+                          fontWeight: 700, 
+                          fontSize: '0.8rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.1em',
+                          whiteSpace: 'nowrap',
+                          transition: 'color 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                          color: isActive(item.href || '') ? '#6366F1' : (mode === 'dark' ? '#fff' : '#09090B'),
+                          opacity: isActive(item.href || '') ? 1 : 0.5,
+                          bgcolor: isActive(item.href || '') ? alpha('#6366F1', 0.05) : 'transparent',
                         '&:hover': { 
                           opacity: 1, 
                           color: '#6366F1', 
@@ -348,7 +356,7 @@ export const Navbar = () => {
               ))}
             </Stack>
 
-            <Stack direction="row" spacing={1} alignItems="center">
+            <Stack direction="row" spacing={1} alignItems="center" justifyContent="flex-end" sx={{ minWidth: 0 }}>
               <Tooltip title="Ecosystem Portal">
                 <IconButton 
                   onClick={() => setIsEcosystemPortalOpen(true)}
@@ -359,7 +367,7 @@ export const Navbar = () => {
                     borderRadius: '12px',
                     width: 42,
                     height: 42,
-                    transition: 'all 0.3s',
+                    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                     position: 'relative',
                     boxShadow: '0 1px 0 rgba(0,0,0,0.4)',
                     '&::before': {
